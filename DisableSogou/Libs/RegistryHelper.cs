@@ -182,7 +182,13 @@ namespace MFGLib
 				return defValue;
 			}
 
-			return m_regKey.GetValue(name, defValue).ToString();
+			object result = m_regKey.GetValue(name, defValue);
+			if (result == null)
+			{
+				return null;
+			}
+
+			return result.ToString();
 		}
 
 		/// <summary>
@@ -399,6 +405,32 @@ namespace MFGLib
 				}					
 			}
 		}
+
+		/// <summary>
+		/// Checks whether an application has entry in Software\\Microsoft\\Windows\\CurrentVersion\\Run
+		/// </summary>
+		/// <param name="name">Application name to be checked</param>
+		/// <param name="currentUser">Only check in current user</param>
+		/// <returns>Returns executable path if exists, null otherwise.</returns>
+		public static string CheckAutoStartApp(string name, bool currentUser = true)
+		{
+			string result = null;
+			using (RegistryHelper reg = new RegistryHelper(currentUser ? Registry.CurrentUser : Registry.LocalMachine))
+			{
+				if (reg.Open("Software\\Microsoft\\Windows\\CurrentVersion\\Run", false))
+				{
+					result = reg.ReadString(name, null);
+				}
+			}
+
+			if (result == "")
+			{
+				result = null;
+			}
+
+			return result;
+		}
+
 		#endregion
 
 		#region Private Members
